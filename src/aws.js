@@ -22,7 +22,7 @@ function buildUserDataScript(githubRegistrationToken, label) {
       'curl -O -L https://github.com/actions/runner/releases/download/v2.286.0/actions-runner-linux-${RUNNER_ARCH}-2.286.0.tar.gz',
       'tar xzf ./actions-runner-linux-${RUNNER_ARCH}-2.286.0.tar.gz',
       'export RUNNER_ALLOW_RUNASROOT=1',
-      `./config.sh --url https://github.com/${config.githubContext.owner}/${config.githubContext.repo} --token ${githubRegistrationToken} --labels ${label}`,
+      `./config.sh --url https://github.com/${config.githubContext.owner}/${config.githubContext.repo} --token ${githubRegistrationToken} --labels ${label} --ephemeral`,
       './run.sh',
     ];
   }
@@ -56,7 +56,7 @@ async function startEc2Instance(label, githubRegistrationToken) {
   }
 }
 
-async function terminateEc2Instance() {
+async function terminateEc2Instance(mode) {
   const ec2 = new AWS.EC2();
 
   const params = {
@@ -64,8 +64,16 @@ async function terminateEc2Instance() {
   };
 
   try {
-    await ec2.terminateInstances(params).promise();
-    core.info(`AWS EC2 instance ${config.input.ec2InstanceId} is terminated`);
+    // for backwards compatibility, 'stop' means end the execution and get rid of the VM.
+    // 'suspend' means keep the VM in stopped state even thought in EC2 the terms are
+    // 'stop' to keep the VM and 'terminate' to destroy it
+    if (mode === 'stop') {
+      await ec2.terminateInstances(params).promise();
+      core.info(`AWS EC2 instance ${config.input.ec2InstanceId} is terminated`);
+    } else {
+      await ec2.stopInstances(params).promise();
+      core.info(`AWS EC2 instance ${config.input.ec2InstanceId} is stopped`);
+    }
     return;
   } catch (error) {
     core.error(`AWS EC2 instance ${config.input.ec2InstanceId} termination error`);

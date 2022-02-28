@@ -46,12 +46,12 @@ class Config {
       if (!this.input.ec2ImageId || !this.input.ec2InstanceType || !this.input.subnetId || !this.input.securityGroupId) {
         throw new Error(`Not all the required inputs are provided for the 'start' mode`);
       }
-    } else if (this.input.mode === 'stop') {
+    } else if (this.input.mode === 'stop' || this.input.mode === 'suspend') {
       if (!this.input.label || !this.input.ec2InstanceId) {
         throw new Error(`Not all the required inputs are provided for the 'stop' mode`);
       }
     } else {
-      throw new Error('Wrong mode. Allowed values: start, stop.');
+      throw new Error('Wrong mode. Allowed values: start, stop, suspend');
     }
   }
 
