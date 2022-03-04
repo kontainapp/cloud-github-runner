@@ -31,6 +31,22 @@ async function getRegistrationToken() {
   }
 }
 
+// get GitHub download URL for installing a self-hosted runner
+async function getDownloadURL() {
+  const octokit = github.getOctokit(config.input.githubToken);
+
+  try {
+    const response = await octokit.request('GET /repos/{owner}/{repo}/actions/runners/downloads', config.githubContext);
+    core.info('GitHub Download URL is received');
+    return response.data.filter(function(n) {
+      return n.os === "linux" && n.architecture === "x64";
+    })[0].download_url;
+  } catch (error) {
+    core.error('GitHub Download URL receiving error');
+    throw error;
+  }
+}
+
 async function removeRunner() {
   const runner = await getRunner(config.input.label);
   const octokit = github.getOctokit(config.input.githubToken);
@@ -85,6 +101,7 @@ async function waitForRunnerRegistered(label) {
 
 module.exports = {
   getRegistrationToken,
+  getDownloadURL,
   removeRunner,
   waitForRunnerRegistered,
 };
