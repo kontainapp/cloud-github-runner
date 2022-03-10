@@ -10,18 +10,17 @@ function buildUserDataScript(githubRegistrationToken, githubDownloadURL, label) 
     return [
       '#!/bin/bash',
       `cd "${config.input.runnerHomeDir}"`,
-      'export RUNNER_ALLOW_RUNASROOT=1',
-      `./config.sh --url https://github.com/${config.githubContext.owner}/${config.githubContext.repo} --token ${githubRegistrationToken} --labels ${label}`,
-      './run.sh',
+      `echo ./config.sh --url https://github.com/${config.githubContext.owner}/${config.githubContext.repo} --token ${githubRegistrationToken} --labels ${label} | su ${config.input.runnerUser} `,
+      'echo ./run.sh | su ${config.input.runnerUser} ',
     ];
   } else {
     return [
       '#!/bin/bash',
-      'mkdir actions-runner && cd actions-runner',
-      `curl -s -L ${githubDownloadURL} | tar xzf -`,
-      'export RUNNER_ALLOW_RUNASROOT=1',
-      `./config.sh --url https://github.com/${config.githubContext.owner}/${config.githubContext.repo} --token ${githubRegistrationToken} --labels ${label} --ephemeral`,
-      './run.sh',
+      `mkdir actions-runner && chown ${config.input.runnerUser} actions-runner && cd actions-runner`,
+      `curl -o actions-runner-linux-x64.tar.gz -s -L ${githubDownloadURL}`,
+      `echo tar xzf actions-runner-linux-x64.tar.gz | su ${config.input.runnerUser} `,
+      `echo ./config.sh --url https://github.com/${config.githubContext.owner}/${config.githubContext.repo} --token ${githubRegistrationToken} --labels ${label} --ephemeral | su ${config.input.runnerUser} `,
+      `echo ./run.sh | su ${config.input.runnerUser} `,
     ];
   }
 }
