@@ -40,6 +40,7 @@ async function startEc2Instance(label, githubRegistrationToken, githubDownloadUR
     SecurityGroupIds: [config.input.securityGroupId],
     IamInstanceProfile: { Name: config.input.iamRoleName },
     TagSpecifications: config.tagSpecifications,
+    VirtualName: config.input.virtualName,
   };
 
   try {
