@@ -2,51 +2,27 @@ const AWS = require('aws-sdk');
 const core = require('@actions/core');
 const config = require('./config');
 
-// User data scripts are run as the root user
-function buildUserDataScript(githubRegistrationToken, githubDownloadURL, label) {
-  if (config.input.runnerHomeDir) {
-    // If runner home directory is specified, we expect the actions-runner software (and dependencies)
-    // to be pre-installed in the AMI, so we simply cd into that directory and then start the runner
-    return [
-      '#!/bin/bash',
-      `cd "${config.input.runnerHomeDir}"`,
-      `echo ./config.sh --url https://github.com/${config.githubContext.owner}/${config.githubContext.repo} --token ${githubRegistrationToken} --labels ${label} | su ${config.input.runnerUser} `,
-      'echo ./run.sh | su ${config.input.runnerUser} ',
-    ];
-  } else {
-    return [
-      '#!/bin/bash',
-      `mkdir actions-runner && chown ${config.input.runnerUser} actions-runner && cd actions-runner`,
-      `curl -o actions-runner-linux-x64.tar.gz -s -L ${githubDownloadURL}`,
-      `echo tar xzf actions-runner-linux-x64.tar.gz | su ${config.input.runnerUser} `,
-      `echo ./config.sh --url https://github.com/${config.githubContext.owner}/${config.githubContext.repo} --token ${githubRegistrationToken} --labels ${label} --ephemeral | su ${config.input.runnerUser} `,
-      `echo ./run.sh | su ${config.input.runnerUser} `,
-    ];
-  }
-}
 
-async function startEc2Instance(label, githubRegistrationToken, githubDownloadURL) {
+async function startEc2Instance(userData) {
   const ec2 = new AWS.EC2();
 
-  const userData = buildUserDataScript(githubRegistrationToken, githubDownloadURL, label);
-
-  const params = {
+  const instanceParams = {
     ImageId: config.input.ec2ImageId,
     InstanceType: config.input.ec2InstanceType,
     MinCount: 1,
     MaxCount: 1,
     UserData: Buffer.from(userData.join('\n')).toString('base64'),
-    SubnetId: config.input.subnetId,
-    SecurityGroupIds: [config.input.securityGroupId],
-    IamInstanceProfile: { Name: config.input.iamRoleName },
-    TagSpecifications: config.tagSpecifications,
-    VirtualName: config.input.virtualName,
+    SubnetId: config.input.ec2SubnetId,
+    SecurityGroupIds: [config.input.ec2SecurityGroupId],
+    IamInstanceProfile: { Name: config.input.ec2IamRoleName },
+    TagSpecifications: config.ec2tagSpecifications,
   };
 
+
   try {
-    const result = await ec2.runInstances(params).promise();
+    const result = await ec2.runInstances(instanceParams).promise();
     const ec2InstanceId = result.Instances[0].InstanceId;
-    core.info(`AWS EC2 instance ${ec2InstanceId} is started`);
+    core.info(`AWS EC2 instance ${ec2InstanceId} have started`);
     return ec2InstanceId;
   } catch (error) {
     core.error('AWS EC2 instance starting error');
@@ -54,21 +30,27 @@ async function startEc2Instance(label, githubRegistrationToken, githubDownloadUR
   }
 }
 
-async function terminateEc2Instance(mode) {
+async function stopRunner() {
   const ec2 = new AWS.EC2();
+
+  if (!config.input.ec2InstanceId) {
+    core.info(`AWS EC2 instance doe s not exist. Nothinng to stop or terminate`);
+    return;
+  }
 
   const params = {
     InstanceIds: [config.input.ec2InstanceId],
   };
 
+  // if there was no failure on previous related jobs. i.e isFailure is false
+  // we terminate the VM; otherwise we just stop it so it is ready for future examination
   try {
-    // for backwards compatibility, 'stop' means end the execution and get rid of the VM.
-    // 'suspend' means keep the VM in stopped state even thought in EC2 the terms are
-    // 'stop' to keep the VM and 'terminate' to destroy it
-    if (mode === 'stop') {
+    if (config.terminateInstance) {
+      core.info(`Terminating ec2 instance ${config.input.ec2InstanceId}`);
       await ec2.terminateInstances(params).promise();
       core.info(`AWS EC2 instance ${config.input.ec2InstanceId} is terminated`);
     } else {
+      core.info(`Stopping ec2 instance ${config.input.ec2InstanceId}`);
       await ec2.stopInstances(params).promise();
       core.info(`AWS EC2 instance ${config.input.ec2InstanceId} is stopped`);
     }
@@ -98,6 +80,6 @@ async function waitForInstanceRunning(ec2InstanceId) {
 
 module.exports = {
   startEc2Instance,
-  terminateEc2Instance,
+  stopRunner,
   waitForInstanceRunning,
 };

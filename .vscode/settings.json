@@ -3,9 +3,11 @@
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "[javascript]": {
     "editor.formatOnSave": true,
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
+    "editor.defaultFormatter": "vscode.typescript-language-features"
   },
   "files.exclude": {
     "dist": true
-  }
+  },
+  "editor.formatOnPaste": true,
+  "editor.formatOnType": true
 }

@@ -1,11 +1,11 @@
 {
   "name": "ec2-github-runner",
-  "description": "GitHub Action for automatic creation and registration AWS EC2 instance as a GitHub Actions self-hosted runner.",
-  "author": "Volodymyr Machula",
+  "description": "GitHub Action for automatic creation and registration AWS EC2 and Azure VM as a GitHub Actions self-hosted runner.",
+  "author": "Volodymyr Machula, Elana Zobin",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git@github.com:machulav/ec2-github-runner.git"
+    "url": "git+ssh://git@github.com/kontainapp/ec2-github-runner.git"
   },
   "homepage": "https://github.com/machulav/ec2-github-runner#readme",
   "bugs": {
@@ -20,11 +20,22 @@
     "@actions/core": "^1.2.6",
     "@actions/github": "^4.0.0",
     "aws-sdk": "^2.809.0",
-    "lodash": "^4.17.21"
+    "lodash": "^4.17.21",
+    "@azure/arm-compute": "^17.3.0",
+    "@azure/arm-network": "^26.0.0",
+    "@azure/arm-resources": "^5.0.0",
+    "@azure/arm-storage": "^17.1.0",
+    "@azure/identity": "^2.0.4",
+    "minimist": "^1.2.6"
   },
   "devDependencies": {
     "@vercel/ncc": "^0.25.1",
     "dotenv": "^8.2.0",
     "eslint": "^7.15.0"
+  },
+  "version": "1.0.0",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
   }
 }
