@@ -2,27 +2,40 @@ const core = require('@actions/core');
 const github = require('@actions/github');
 
 class Config {
+  getAzureRunOnLabel() {
+    return "azure-" + this.label;
+  }
+
+  getEC2RunOnLabel() {
+    return "ec2-" + this.label;
+  }
+
   constructor() {
     this.input = {
+      // common variables
       mode: core.getInput('mode'),
       githubToken: core.getInput('github-token'),
+      runnerUser: core.getInput('runner-user'),
+      runnerHomeDir: core.getInput('runner-home-dir'),
+      // ec2 variables
       ec2ImageId: core.getInput('ec2-image-id'),
       ec2InstanceType: core.getInput('ec2-instance-type'),
-      subnetId: core.getInput('subnet-id'),
-      securityGroupId: core.getInput('security-group-id'),
-      label: core.getInput('label'),
+      ec2SubnetId: core.getInput('ec2-subnet-id'),
+      ec2SecurityGroupId: core.getInput('ec2-security-group-id'),
       ec2InstanceId: core.getInput('ec2-instance-id'),
-      iamRoleName: core.getInput('iam-role-name'),
-      runnerHomeDir: core.getInput('runner-home-dir'),
-      runnerUser: core.getInput('runner-user'),
-      virtualName: core.getInput('name'),
-    };
+      ec2IamRoleName: core.getInput('ec2-iam-role-name'),
+      // azure variables
+      azSubscriptionId: core.getInput('az-subscription-id'),//${{ secrets.SP_SUBSCRIPTION_ID }}
+      azClientId: core.getInput('az-client-id'),//${{ secrets.SP_APPID }}
+      azSecret: core.getInput('az-secret'),//${{ secrets.SP_PASSWORD }}
+      azTenantId: core.getInput('az-tenant-id'),//${{ secrets.SP_TENANT }}
+      azImage: core.getInput('az-image'),  //"groupName:imageName L0BaseImage",
+      azLocation: core.getInput('az-location'),//"westus",
+      azSubnet: core.getInput('az-subnet'),
+      azVmSize: core.getInput('az-vm-size'),
+      azPubKeys: core.getInput('az-public-keys'),
 
-    const tags = JSON.parse(core.getInput('aws-resource-tags'));
-    this.tagSpecifications = null;
-    if (tags.length > 0) {
-      this.tagSpecifications = [{ResourceType: 'instance', Tags: tags}, {ResourceType: 'volume', Tags: tags}];
-    }
+    };
 
     // the values of github.context.repo.owner and github.context.repo.repo are taken from
     // the environment variable GITHUB_REPOSITORY specified in "owner/repo" format and
@@ -31,6 +44,20 @@ class Config {
       owner: github.context.repo.owner,
       repo: github.context.repo.repo,
     };
+
+    this.label = 'runner-' + github.context.workflow.replace(/\s/g, '-') + '-' + github.context.runNumber;
+
+    const tags = [{ "Key": "Name", "Value": `ec2-${this.label}` }];
+    this.ec2tagSpecifications = [
+      {
+        ResourceType: 'instance',
+        Tags: tags
+      },
+      {
+        ResourceType: 'volume',
+        Tags: tags
+      }
+    ];
 
     //
     // validate input
@@ -45,20 +72,41 @@ class Config {
     }
 
     if (this.input.mode === 'start') {
-      if (!this.input.ec2ImageId || !this.input.ec2InstanceType || !this.input.subnetId || !this.input.securityGroupId) {
-        throw new Error(`Not all the required inputs are provided for the 'start' mode`);
+      if (!this.input.ec2ImageId || !this.input.ec2InstanceType || !this.input.ec2SubnetId || !this.input.ec2SecurityGroupId) {
+        throw new Error(`Not all the required inputs are provided for the 'start' mode for ec2`);
       }
-    } else if (this.input.mode === 'stop' || this.input.mode === 'suspend') {
-      if (!this.input.label || !this.input.ec2InstanceId) {
-        throw new Error(`Not all the required inputs are provided for the 'stop' mode`);
+      if (!this.input.azImage || !this.input.azLocation || !this.input.azPubKeys || !this.input.azSubnet || !this.input.azVmSize) {
+        throw new Error(`Not all the required inputs are provided for the 'start' mode for azure`);
+      }
+    } else if (this.input.mode === 'stop') {
+      core.info(`Processing stop mode for ec2InstanceId: ${this.input.ec2InstanceId}`);
+
+      this.terminateInstance = true;
+      const status = core.getInput('status');
+
+      if (!status) {
+        throw new Error(`Missing required input parameter: status`);
+      }
+      if (!this.input.ec2InstanceId) {
+        // instance id registered - definitely there was an error
+        this.terminateInstance == false;
+      }
+      core.info(`Checking status of ancestorial jobs`);
+      // check status of needed jobs
+      if (status) {
+        const needs_data = JSON.parse(status);
+        core.info("passed in needs data: " + JSON.stringify(needs_data));
+
+        Object.keys(needs_data).forEach(function (key) {
+          if (needs_data[key].result == 'failure') {
+            this.terminateInstance == false;
+          }
+        });
       }
     } else {
-      throw new Error('Wrong mode. Allowed values: start, stop, suspend');
+      throw new Error('Wrong mode. Allowed values: start, stop');
     }
-  }
-
-  generateUniqueLabel() {
-    return Math.random().toString(36).substr(2, 5);
+    core.info(`do terminate? ${this.terminateInstance}`);
   }
 }
 

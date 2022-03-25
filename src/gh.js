@@ -47,16 +47,46 @@ async function getDownloadURL() {
   }
 }
 
-async function removeRunner() {
-  const runner = await getRunner(config.input.label);
+// User data scripts are run as the root user
+async function buildUserDataScript(label) {
+
+  const githubRegistrationToken = await getRegistrationToken();
+  const githubDownloadURL = await getDownloadURL();
+
+  if (config.input.runnerHomeDir) {
+    // If runner home directory is specified, we expect the actions-runner software (and dependencies)
+    // to be pre-installed in the AMI, so we simply cd into that directory and then start the runner
+    return [
+      '#!/bin/bash',
+      `cd "${config.input.runnerHomeDir}"`,
+      `echo ./config.sh --url https://github.com/${config.githubContext.owner}/${config.githubContext.repo} --token ${githubRegistrationToken} --labels ${label} | su ${config.input.runnerUser} `,
+      'echo ./run.sh | su ${config.input.runnerUser} ',
+    ];
+  } else {
+    return [
+      '#!/bin/bash',
+      `mkdir actions-runner && chown ${config.input.runnerUser} actions-runner && cd actions-runner`,
+      `curl -o actions-runner-linux-x64.tar.gz -s -L ${githubDownloadURL}`,
+      `echo tar xzf actions-runner-linux-x64.tar.gz | su ${config.input.runnerUser} `,
+      `echo ./config.sh --url https://github.com/${config.githubContext.owner}/${config.githubContext.repo} --token ${githubRegistrationToken} --labels ${label} --ephemeral | su ${config.input.runnerUser} `,
+      `echo ./run.sh | su ${config.input.runnerUser} `,
+    ];
+  }
+}
+
+
+async function removeRunner(label) {
+
+  const runner = await getRunner(label);
   const octokit = github.getOctokit(config.input.githubToken);
 
   // skip the runner removal process if the runner is not found
   if (!runner) {
-    core.info(`GitHub self-hosted runner with label ${config.input.label} is not found, so the removal is skipped`);
+    core.info(`GitHub self-hosted runner with label ${label} is not found, so the removal is skipped`);
     return;
   }
 
+  core.info(`Found runner to be removed: {runner}`);
   try {
     await octokit.request('DELETE /repos/{owner}/{repo}/actions/runners/{runner_id}', _.merge(config.githubContext, { runner_id: runner.id }));
     core.info(`GitHub self-hosted runner ${runner.name} is removed`);
@@ -73,7 +103,7 @@ async function waitForRunnerRegistered(label) {
   const quietPeriodSeconds = 30;
   let waitSeconds = 0;
 
-  core.info(`Waiting ${quietPeriodSeconds}s for the AWS EC2 instance to be registered in GitHub as a new self-hosted runner`);
+  core.info(`Waiting ${quietPeriodSeconds}s for the ${label} runner to be registered in GitHub as a new self-hosted runner`);
   await new Promise(r => setTimeout(r, quietPeriodSeconds * 1000));
   core.info(`Checking every ${retryIntervalSeconds}s if the GitHub self-hosted runner is registered`);
 
@@ -100,8 +130,9 @@ async function waitForRunnerRegistered(label) {
 }
 
 module.exports = {
-  getRegistrationToken,
-  getDownloadURL,
+  // getRegistrationToken,
+  // getDownloadURL,
+  buildUserDataScript,
   removeRunner,
   waitForRunnerRegistered,
 };
