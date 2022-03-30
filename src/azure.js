@@ -26,13 +26,13 @@ const createVnet = async (networkClient) => {
     const vnetParameters = {
         location: config.input.azLocation,
         addressSpace: {
-            addressPrefixes: [config.input.azSubnet + '/16']
+            addressPrefixes: [config.input.subnet + '/16']
         },
         // dhcpOptions: {
         //     dnsServers: ['10.1.1.1', '10.1.2.4']
         // },
         subnets: [{
-            name: subnetName, addressPrefix: config.input.azSubnet + '/24'
+            name: subnetName, addressPrefix: config.input.subnet + '/24'
         }],
     };
     return await networkClient.virtualNetworks.beginCreateOrUpdateAndWait(config.label, vnetName, vnetParameters);
@@ -87,7 +87,7 @@ const getNIC = async (networkClient) => {
 }
 
 const getSSHKeys = () => {
-    
+
     const ssh_keys = [];
     if (!fs.existsSync(config.input.azPubKeys)) {
         core.setFailed(`directory ${config.input.azPubKeys} does not exist`);
@@ -166,7 +166,7 @@ const checkVmExists = async (computeClient) => {
     }
 }
 
-const startRunner = async(userData) => {
+const startRunner = async (userData) => {
 
     // authenticate using environment
     const credential = new ClientSecretCredential(
@@ -184,7 +184,7 @@ const startRunner = async(userData) => {
     try {
         await createResourceGroup(resourceClient);
         core.info("Resource group Created");
-        
+
         await createVnet(networkClient);
         //vnetInfo = getVnet(networkClient);
         core.info("Vnet Created");
@@ -257,7 +257,7 @@ const stopRunner = async () => {
     } catch (error) {
         core.error(`Azure VM ${config.label} stopping/termination error`);
         throw error;
-    }    
+    }
     return 'success';
 }
 
