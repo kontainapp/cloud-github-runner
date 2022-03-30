@@ -7,7 +7,7 @@ const core = require('@actions/core');
 
 function setOutput(label, ec2InstanceId) {
   //core.setOutput('label', label);
-  core.setOutput('ec2-instance-id', ec2InstanceId);
+  //core.setOutput('ec2-instance-id', ec2InstanceId);
 
   const run_labels = {
     ec2: config.getEC2RunOnLabel(),
@@ -27,13 +27,13 @@ async function start() {
   // starting ec2
   let userData = await gh.buildUserDataScript(ec2_gh_label);
   core.info("userData for ec2: = " + userData.toString());
-  const ec2InstanceId = await aws.startEc2Instance(userData);
+  const ec2InstanceId = await aws.startRunner(userData);
 
   // set output as soon as we can so we will be able to clean up correctly
   setOutput(config.label, ec2InstanceId);
 
   // now wait and register
-  await aws.waitForInstanceRunning(ec2InstanceId);
+  //await aws.waitForInstanceRunning(ec2InstanceId);
   await gh.waitForRunnerRegistered(ec2_gh_label);
 
   // starting azure 

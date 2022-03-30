@@ -9,5 +9,6 @@
     "dist": true
   },
   "editor.formatOnPaste": true,
-  "editor.formatOnType": true
+  "editor.formatOnType": true,
+  "editor.minimap.enabled": false
 }
