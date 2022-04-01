@@ -1,10 +1,18 @@
-name: On-demand self-hosted AWS EC2 and azure runner for GitHub Actions
+name: On-demand self-hosted AWS EC2 and Azure runner for GitHub Actions
 description: GitHub Action for automatic creation and registration AWS EC2 instance and Azure as a GitHub Actions self-hosted runner.
-author: Elana Zobi
+author: Elana Zobin
 branding:
   icon: 'box'
   color: 'purple'
 inputs:
+  clouds:
+    description: >-
+      Specify which cloud runner you want to run:
+        - ec2 - runs ec2 only
+        - azure - runs azure only 
+        - both - runs both runners
+    required: false
+    default: 'both'
   mode:
     description: >-
       Specify here which mode you want to use:
@@ -23,15 +31,15 @@ inputs:
     description: >-
       user to be used as runner of the virtual machine.
     required: true
-  runner-home-dir:
-    description: >-
-      Directory that contains actions-runner software and scripts. E.g. /home/runner/actions-runner.
-    required: false
   subnet: 
     description: >-
         subnet info in the format N.N.N.N. Required for start mode
     required: false
     default: 10.0.0.0
+  public-keys-dir: 
+    description: >-
+        full path to the directory with public keys to supply to VM
+    required: false
   ec2-access-key-id:
     description: >-
       aws key Id
@@ -63,6 +71,11 @@ inputs:
       IAM Role Name to attach to the created EC2 instance.
       This requires additional permissions on the AWS role used to launch instances.
     required: false
+  ec2-tags:
+    description: >-
+      Specifies tags to add to the EC2 instance and any attached storage. 
+      This field is a stringified JSON array of tag objects, each containing a `Key` and `Value` field
+    required: false
   az-subscription-id: 
     description: >-
         Azure secuprity information
@@ -91,22 +104,8 @@ inputs:
     description: >-
         one of teh available vm sizes from Asure
     required: false
-  az-public-keys: 
-    description: >-
-        full path to the directory with public keys to supply to VM
-    required: false
 
 outputs:
-  # label:
-  #   description: >-
-  #     Name of the unique label assigned to the runner.
-  #     The label is used in two cases:
-  #     - to use as the input of 'runs-on' property for the following jobs;
-  #     - to remove the runner from GitHub when it is not needed anymore.
-  # ec2-instance-id:
-  #   description: >-
-  #     EC2 Instance Id of the created runner.
-  #     The id is used to terminate the EC2 instance when the runner is not needed anymore.
   run-ons:
     description: >-
       JSON string that contains array of available self-hosted runners 

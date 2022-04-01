@@ -28,19 +28,12 @@ const createVnet = async (networkClient) => {
         addressSpace: {
             addressPrefixes: [config.input.subnet + '/16']
         },
-        // dhcpOptions: {
-        //     dnsServers: ['10.1.1.1', '10.1.2.4']
-        // },
         subnets: [{
             name: subnetName, addressPrefix: config.input.subnet + '/24'
         }],
     };
     return await networkClient.virtualNetworks.beginCreateOrUpdateAndWait(config.label, vnetName, vnetParameters);
 }
-
-// const getVnet = async (networkClient) => {
-//     return await networkClient.virtualNetworks.get(config.label, config.label + '-vnet');
-// }
 
 const createPublicIp = async (networkClient) => {
     const publicIPName = config.label + '-pip';
@@ -89,13 +82,13 @@ const getNIC = async (networkClient) => {
 const getSSHKeys = () => {
 
     const ssh_keys = [];
-    if (!fs.existsSync(config.input.azPubKeys)) {
-        core.setFailed(`directory ${config.input.azPubKeys} does not exist`);
+    if (!fs.existsSync(config.input.publicKeysDir)) {
+        core.setFailed(`directory ${config.input.publicKeysDir} does not exist`);
         return;
     }
-    const files = fs.readdirSync(config.input.azPubKeys).filter((elm) => /.*\.pub/gi.test(elm))
+    const files = fs.readdirSync(config.input.publicKeysDir).filter((elm) => /.*\.pub/gi.test(elm))
     for (var i = 0; i < files.length; i++) {
-        const data = fs.readFileSync(path.join(config.input.azPubKeys, files[i])).toString();
+        const data = fs.readFileSync(path.join(config.input.publicKeysDir, files[i])).toString();
         const key = {
             keyData: data,
             path: `/home/${config.input.runnerUser}/.ssh/authorized_keys`
@@ -168,7 +161,7 @@ const checkVmExists = async (computeClient) => {
 
 const startRunner = async (userData) => {
 
-    // authenticate using environment
+    // authenticate 
     const credential = new ClientSecretCredential(
         config.input.azTenantId,
         config.input.azClientId,
@@ -178,15 +171,11 @@ const startRunner = async (userData) => {
     const networkClient = new NetworkManagementClient(credential, config.input.azSubscriptionId);
     const resourceClient = new ResourceManagementClient(credential, config.input.azSubscriptionId);
 
-    // Store function output to be used elsewhere
-    //const vnetInfo = null;
-
     try {
         await createResourceGroup(resourceClient);
         core.info("Resource group Created");
 
         await createVnet(networkClient);
-        //vnetInfo = getVnet(networkClient);
         core.info("Vnet Created");
 
         const subnetInfo = await networkClient.subnets.get(config.label, config.label + '-vnet', config.label + '-subnet');
@@ -213,15 +202,9 @@ const startRunner = async (userData) => {
 }
 
 const stopRunner = async () => {
-    // randomly generated to allow cuncurrent runs of multiple VM's
     const vmName = config.label + "-vm";
 
-    // core.info("tenant: " + config.input.azTenantId);
-    // core.info('client: ' + config.input.azClientId);
-    // core.info('secret: ' + config.input.azSecret);
-    // core.info('subscription: ' + config.input.azSubscriptionId);
-
-    // authenticate using environment
+    // authenticate
     const credential = new ClientSecretCredential(
         config.input.azTenantId,
         config.input.azClientId,
