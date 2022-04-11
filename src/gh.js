@@ -3,6 +3,28 @@ const github = require('@actions/github');
 const _ = require('lodash');
 const config = require('./config');
 
+async function getJobInfo() {
+    const octokit = github.getOctokit(config.input.githubToken);
+
+    try {
+
+        const params = {
+            owner: github.context.repo.owner,
+            repo: github.context.repo.repo,
+            run_id: github.context.run_id
+        }
+        const jobs = await octokit.paginate('GET /repos/{owner}/{repo}/actions/runs/{run_id}/jobs', params);
+        for (const idx in jobs) {
+            core.info(JSON.stringify(jobs[idx]));
+            if (jobs[idx].name == github.context.job) {
+                core.info('Found Job:');
+                break;
+            }
+        }        
+    } catch (error) {
+        return null;
+    }
+}
 // use the unique label to find the runner
 // as we don't have the runner's id, it's not possible to get it in any other way
 async function getRunner(label) {
@@ -10,20 +32,6 @@ async function getRunner(label) {
 
 
     try {
-
-        let params = {
-            owner: github.context.repo.owner,
-            repo: github.context.repo.repo,
-            run_id: github.context.run_id
-        }
-        const jobs = await octokit.paginate('GET /repos/{owner}/{repo}/actions/runs/{run_id}/jobs', config.githubContext);
-        for (const idx in jobs) {
-            if (jobs[idx].name == github.context.job) {
-                core.info('Found Job:');
-                core.info(JSON.stringify(jobs[ids]));
-                break;
-            }
-        }        
 
         const runners = await octokit.paginate('GET /repos/{owner}/{repo}/actions/runners', config.githubContext);
         // core.info( 'Found runners: ' +JSON.stringify(runners));
@@ -143,4 +151,5 @@ module.exports = {
     buildUserDataScript,
     removeRunner,
     waitForRunnerRegistered,
+    getJobInfo
 };

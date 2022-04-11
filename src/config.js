@@ -1,5 +1,6 @@
 const core = require('@actions/core');
 const github = require('@actions/github');
+const gh = require('./gh');
 class Config {
     getAzureRunOnLabel() {
         return "azure-" + this.label;
@@ -38,6 +39,8 @@ class Config {
 
         };
 
+        gh.getJobInfo();
+        
         this.terminateInstance = true;
 
         // the values of github.context.repo.owner and github.context.repo.repo are taken from
