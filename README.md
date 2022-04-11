@@ -1,6 +1,6 @@
 # On-demand self-hosted AWS EC2 and Azure runner for GitHub Actions
 
-This roject is loosely based on ec2-github-runner by Volodymyr Machula.
+This project is loosely based on ec2-github-runner by Volodymyr Machula.
 Start your EC2, Azure or both  [self-hosted runner](https://docs.github.com/en/free-pro-team@latest/actions/hosting-your-own-runners) right before you need it.
 Run one or more jobs on it.
 Finally, stop it when you finish.
@@ -190,7 +190,7 @@ jobs:
 
       - name: Start cloud runners
         id: start-cloud-runner
-        uses: kontainapp/ec2-github-runner@ez1
+        uses: kontainapp/cloud-github-runner@ez1
         with:
           mode: start
           github-token: ${{ secrets.GH_TOKEN }}
@@ -283,7 +283,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Stop cloud runner
-        uses: kontainapp/ec2-github-runner@ez1
+        uses: kontainapp/cloud-github-runner@v3.1
         with:
           mode: stop
           status: ${{ toJSON(needs) }}

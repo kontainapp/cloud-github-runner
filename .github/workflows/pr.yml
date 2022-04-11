@@ -14,7 +14,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: '**/node_modules'
-          key: ec2-github-runner-${{ hashFiles('**/package-lock.json') }}
+          key: clooud-github-runner-${{ hashFiles('**/package-lock.json') }}
       - name: Install packages
         run: npm install
       - name: Run linter
