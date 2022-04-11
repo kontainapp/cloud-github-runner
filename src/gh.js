@@ -13,11 +13,14 @@ async function getJobInfo() {
             repo: github.context.repo.repo,
             run_id: github.context.run_id
         }
+        core.info(`Getting all jobs using parameters ${JSON.stringify(params)}`);
         const jobs = await octokit.paginate('GET /repos/{owner}/{repo}/actions/runs/{run_id}/jobs', params);
+    
+        core.info(`Retrieved jobs: \n ${JSON.stringify(jobs)}`);
+
         for (const idx in jobs) {
-            core.info(JSON.stringify(jobs[idx]));
             if (jobs[idx].name == github.context.job) {
-                core.info('Found Job:');
+                core.info(`Found my Job: ${github.context.job}`);
                 break;
             }
         }        
@@ -42,7 +45,8 @@ async function getRunner(label) {
 
         return foundRunners.length > 0 ? foundRunners[0] : null;
     } catch (error) {
-        return null;
+        core.error('Could not get jobs information');
+        throw error;
     }
 }
 
