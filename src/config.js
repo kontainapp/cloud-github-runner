@@ -1,6 +1,5 @@
 const core = require('@actions/core');
 const github = require('@actions/github');
-
 class Config {
     getAzureRunOnLabel() {
         return "azure-" + this.label;

@@ -10,6 +10,21 @@ async function getRunner(label) {
 
 
     try {
+
+        let params = {
+            owner: github.context.repo.owner,
+            repo: github.context.repo.repo,
+            run_id: github.context.run_id
+        }
+        const jobs = await octokit.paginate('GET /repos/{owner}/{repo}/actions/runs/{run_id}/jobs', config.githubContext);
+        for (const idx in jobs) {
+            if (jobs[idx].name == github.context.job) {
+                core.info('Found Job:');
+                core.info(JSON.stringify(jobs[ids]));
+                break;
+            }
+        }        
+
         const runners = await octokit.paginate('GET /repos/{owner}/{repo}/actions/runners', config.githubContext);
         // core.info( 'Found runners: ' +JSON.stringify(runners));
         // core.info(`looking for runner with label ${label}`);
