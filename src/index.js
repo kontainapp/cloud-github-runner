@@ -35,6 +35,8 @@ const startAzure = async () => {
 
 const start = async() => {
 
+    gh.getJobInfo();
+    
     const run_labels = {ec2: "none", azure: "none"};
 
     const promises = ["none", "none"];
