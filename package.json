@@ -1,15 +1,15 @@
 {
-  "name": "ec2-github-runner",
+  "name": "cloud-github-runner",
   "description": "GitHub Action for automatic creation and registration AWS EC2 and Azure VM as a GitHub Actions self-hosted runner.",
   "author": "Volodymyr Machula, Elana Zobin",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/kontainapp/ec2-github-runner.git"
+    "url": "git+ssh://git@github.com/kontainapp/contain-github-runner.git"
   },
-  "homepage": "https://github.com/machulav/ec2-github-runner#readme",
+  "homepage": "https://github.com/kontain/clooud-github-runner#readme",
   "bugs": {
-    "url": "https://github.com/machulav/ec2-github-runner/issues"
+    "url": "https://github.com/contain/cloud-github-runner/issues"
   },
   "scripts": {
     "index": "node -r dotenv/config ./src/index.js",

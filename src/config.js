@@ -1,6 +1,5 @@
 const core = require('@actions/core');
 const github = require('@actions/github');
-
 class Config {
     getAzureRunOnLabel() {
         return "azure-" + this.label;
@@ -50,7 +49,6 @@ class Config {
         };
 
         this.label = 'runner-' + github.context.workflow.replace(/\s/g, '-') + '-' + github.context.runNumber;
-
 
         let tags = [{ "Key": "Name", "Value": this.getEC2RunOnLabel() }];
         if (this.input.ec2Tags) {

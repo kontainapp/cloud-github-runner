@@ -10,6 +10,7 @@ async function getRunner(label) {
 
 
     try {
+
         const runners = await octokit.paginate('GET /repos/{owner}/{repo}/actions/runners', config.githubContext);
         // core.info( 'Found runners: ' +JSON.stringify(runners));
         // core.info(`looking for runner with label ${label}`);

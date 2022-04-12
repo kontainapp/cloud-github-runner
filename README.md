@@ -1,6 +1,6 @@
 # On-demand self-hosted AWS EC2 and Azure runner for GitHub Actions
 
-This roject is loosely based on ec2-github-runner by Volodymyr Machula.
+This project is loosely based on ec2-github-runner by Volodymyr Machula.
 Start your EC2, Azure or both  [self-hosted runner](https://docs.github.com/en/free-pro-team@latest/actions/hosting-your-own-runners) right before you need it.
 Run one or more jobs on it.
 Finally, stop it when you finish.
@@ -129,7 +129,9 @@ Now you're ready to go!
 | `github-token`                                                                                                                                                               | Always required.                           | GitHub Personal Access Token with the `repo` scope assigned.                                                                                                                                                                                                   |
 | `subnet`                                                                                                                                                                  | Required if you use the `start` mode.      |  Subnet in format N.N.N.N                                                                                                                                                                                                                                     |
 | `runner-user`                                                                                                                                                                  | Required if you use the `start` mode.      | Linux user to run as                                                                                                                                                                                                                                      |
-| `public-keys-dir`                                                                                                                                                                  | Required if you use the `start` mode.      | Directory thatcontains public keys to be used to used to access instance                                                                                                                                                                                                                                      || `ec2-image`                                                                                                                                                               | Required if you use the `start` mode.      | EC2 Image Name (AMI). <br><br> The new runner will be launched from this image. <br><br> The action is compatible with Amazon Linux 2 images.                                                                                                                                                                                           |
+| `public-keys-dir`                                                                                                                                                                  | Required if you use the `start` mode.      | Directory thatcontains public keys to be used to used to access instance                                                                                                                                                                                                                                      |
+| `vpc-name`                                                                                                                                                               | Required if you use the `start` mode.      | Name of the VPC to create VM in. If VPC does not exist it will be created. However, due to limit on number of VPCs in EC2, once created, it will not be deleted.                                                     |
+| `ec2-image`                                                                                                                                                               | Required if you use the `start` mode.      | EC2 Image Name (AMI). <br><br> The new runner will be launched from this image. <br><br> The action is compatible with Amazon Linux 2 images.                                                                                                                                                                                           |
 | `ec2-instance-type`                                                                                                                                                          | Required if you use the `start` mode.      | EC2 Instance Type.                                                                                                                                                     |
 | `iam-role-name`                                                                                                                                                              | Optional. Used only with the `start` mode. | IAM role name to attach to the created EC2 runner. <br><br> This allows the runner to have permissions to run additional actions within the AWS account, without having to manage additional GitHub secrets and AWS users. <br><br> Setting this requires additional AWS permissions for the role launching the instance (see above). |
 | `ec2-tags`                                                                                                                                                          | Optional. Used only with the `start` mode. | Specifies tags to add to the EC2 instance and any attached storage. <br><br> This field is a stringified JSON array of tag objects, each containing a `Key` and `Value` field (see example below). <br><br> Setting this requires additional AWS permissions for the role launching the instance (see above).                         |
@@ -190,7 +192,7 @@ jobs:
 
       - name: Start cloud runners
         id: start-cloud-runner
-        uses: kontainapp/ec2-github-runner@ez1
+        uses: kontainapp/cloud-github-runner@ez1
         with:
           mode: start
           github-token: ${{ secrets.GH_TOKEN }}
@@ -283,7 +285,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Stop cloud runner
-        uses: kontainapp/ec2-github-runner@ez1
+        uses: kontainapp/cloud-github-runner@v3.1
         with:
           mode: stop
           status: ${{ toJSON(needs) }}
