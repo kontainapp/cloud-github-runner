@@ -11,7 +11,7 @@ async function getJobInfo() {
         const params = {
             owner: github.context.repo.owner,
             repo: github.context.repo.repo,
-            run_id: github.context.run_id
+            run_id: github.context.runId
         }
         core.info(`Getting all jobs using parameters ${JSON.stringify(params)}`);
         const jobs = await octokit.paginate('GET /repos/{owner}/{repo}/actions/runs/{run_id}/jobs', params);
