@@ -4,7 +4,6 @@ const gh = require('./gh');
 const config = require('./config');
 const core = require('@actions/core');
 
-
 function setOutput(run_labels) {
 
     core.info("run-ons: " + JSON.stringify(run_labels));
@@ -34,9 +33,10 @@ const startAzure = async () => {
 
 
 const start = async() => {
-
+    // prepare to return run-ons (none if particular runner was not requested)
     const run_labels = {ec2: "none", azure: "none"};
-
+    // prepare variable array of promises. EC2 is always first , Azure second 
+    // in order to get consistent returns from Promise.all()
     const promises = ["none", "none"];
 
     if (config.input.coulds === 'ec2' || config.input.coulds === 'both') {

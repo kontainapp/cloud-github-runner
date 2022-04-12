@@ -38,7 +38,6 @@ class Config {
 
         };
 
-
         this.terminateInstance = true;
 
         // the values of github.context.repo.owner and github.context.repo.repo are taken from
@@ -50,7 +49,6 @@ class Config {
         };
 
         this.label = 'runner-' + github.context.workflow.replace(/\s/g, '-') + '-' + github.context.runNumber;
-
 
         let tags = [{ "Key": "Name", "Value": this.getEC2RunOnLabel() }];
         if (this.input.ec2Tags) {
