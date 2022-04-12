@@ -73,10 +73,6 @@ const stopAzure = async () => {
 
 const stop = async () => {
 
-    core.info('Getting job information');
-    gh.getJobInfo();
-
-
     await Promise.all([stopEC2(), stopAzure()]);
 }
 

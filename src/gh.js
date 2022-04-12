@@ -3,33 +3,6 @@ const github = require('@actions/github');
 const _ = require('lodash');
 const config = require('./config');
 
-async function getJobInfo() {
-    const octokit = github.getOctokit(config.input.githubToken);
-
-    try {
-
-        const params = {
-            owner: github.context.repo.owner,
-            repo: github.context.repo.repo,
-            run_id: github.context.runId
-        }
-        core.info(`Getting all jobs using parameters ${JSON.stringify(params)}`);
-        const jobs = await octokit.paginate('GET /repos/{owner}/{repo}/actions/runs/{run_id}/jobs', params);
-    
-        core.info(`Retrieved jobs: \n ${JSON.stringify(jobs)}`);
-
-        core.info(`Looking for a job ${github.context.job}`);
-        
-        for (const idx in jobs) {
-            if (jobs[idx].name == github.context.job) {
-                core.info(`Found my Job: ${github.context.job}`);
-                break;
-            }
-        }        
-    } catch (error) {
-        return null;
-    }
-}
 // use the unique label to find the runner
 // as we don't have the runner's id, it's not possible to get it in any other way
 async function getRunner(label) {
@@ -47,8 +20,7 @@ async function getRunner(label) {
 
         return foundRunners.length > 0 ? foundRunners[0] : null;
     } catch (error) {
-        core.error('Could not get jobs information');
-        throw error;
+        return null;
     }
 }
 
@@ -157,5 +129,4 @@ module.exports = {
     buildUserDataScript,
     removeRunner,
     waitForRunnerRegistered,
-    getJobInfo
 };
