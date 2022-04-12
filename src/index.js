@@ -35,9 +35,6 @@ const startAzure = async () => {
 
 const start = async() => {
 
-    core.info('Getting job information');
-    gh.getJobInfo();
-
     const run_labels = {ec2: "none", azure: "none"};
 
     const promises = ["none", "none"];
@@ -58,6 +55,7 @@ const start = async() => {
 }
 
 const stopEC2 = async () => {
+
     const ec2_gh_label = config.getEC2RunOnLabel();
     
     core.info(`Removing runner ${ec2_gh_label}`);
@@ -74,6 +72,10 @@ const stopAzure = async () => {
 }
 
 const stop = async () => {
+
+    core.info('Getting job information');
+    gh.getJobInfo();
+
 
     await Promise.all([stopEC2(), stopAzure()]);
 }

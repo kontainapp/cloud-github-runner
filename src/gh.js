@@ -18,6 +18,8 @@ async function getJobInfo() {
     
         core.info(`Retrieved jobs: \n ${JSON.stringify(jobs)}`);
 
+        core.info(`Looking for a job ${github.context.job}`);
+        
         for (const idx in jobs) {
             if (jobs[idx].name == github.context.job) {
                 core.info(`Found my Job: ${github.context.job}`);
