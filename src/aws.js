@@ -360,7 +360,7 @@ async function stopRunner() {
     }
     else {
         
-        for (let i = 0; i < result.Reservations.length; i++) {
+        for (let i = 0; i < result.Reservations[0].Instances.length; i++) {
             const instance = result.Reservations[0].Instances[i];
             core.info(`Instance ${instance.InstanceId} - Status ${instance.State.Name}`);
             if (instance.State.Name == 'pending' || instance.State.Name == 'running') {
