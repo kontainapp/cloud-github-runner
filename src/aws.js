@@ -334,6 +334,8 @@ async function stopRunner() {
 
     const ec2_tag = config.getEC2RunOnLabel();
 
+    const instancesIds = [];
+
     // find instance by name 
     params = {
         Filters: [
@@ -345,26 +347,32 @@ async function stopRunner() {
             }
         ]
     };
-    let instanceId;
 
     core.info(`Looking for EC2 Instance ${ec2_tag}`);
     result = await ec2.describeInstances(params).promise();
+
+    core.info(`Reservations: `);
+    core.info(`${JSON.stringify(result.Reservations)}`);
     if (result.Reservations.length == 0) {
         // no instance exists - nothing to do 
         core.info(`EC2 instance ${ec2_tag} has never started`);
         return;
     }
     else {
-        const instance = result.Reservations[0].Instances[0];
-
-        instanceId = instance.InstanceId;
-        core.info(`Found EC2 instace with id ${instanceId}`);
+        
+        for (i = 0; i < result.Reservations.length; i++) {
+            core.info(`Instance ${result.Reservations[0].Instances[i].InstanceId} - Status ${result.Reservations[0].Instances[i].State}`);
+            if (result.Reservations[0].Instances[i].Monitoring.State.Code == '0' || result.Reservations[0].Instances[i].Monitoring.State.Code == '16') {
+                instancesIds.push(result.Reservations[0].Instances[i].InstanceId);
+            }
+        }
+        core.info(`Found EC2 instaces with id ${JSON.stringify(instancesIds)}`);
     }
 
     // if there was no failure on previous related jobs. i.e isFailure is false
     // we terminate the VM; otherwise we just stop it so it is ready for future examination
     params = {
-        InstanceIds: [instanceId],
+        InstanceIds: instancesIds,
     };
 
     try {

@@ -37,8 +37,6 @@ class Config {
             azVmSize: core.getInput('az-vm-size'),
 
         };
-
-        core.info(JSON.stringify(github));
         
         this.terminateInstance = true;
 
