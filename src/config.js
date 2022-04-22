@@ -38,6 +38,8 @@ class Config {
 
         };
 
+        core.info(JSON.stringify(github));
+        
         this.terminateInstance = true;
 
         // the values of github.context.repo.owner and github.context.repo.repo are taken from

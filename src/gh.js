@@ -65,8 +65,8 @@ async function buildUserDataScript(label) {
         `mkdir actions-runner && chown ${config.input.runnerUser} actions-runner && cd actions-runner`,
         `curl -o actions-runner-linux-x64.tar.gz -s -L ${githubDownloadURL}`,
         `echo tar xzf actions-runner-linux-x64.tar.gz | su ${config.input.runnerUser} `,
-        // `echo ./config.sh --url https://github.com/${config.githubContext.owner}/${config.githubContext.repo} --token ${githubRegistrationToken} --labels ${label} | su ${config.input.runnerUser} `,
-        // `echo ./run.sh | su ${config.input.runnerUser} `,
+        `echo ./config.sh --url https://github.com/${config.githubContext.owner}/${config.githubContext.repo} --token ${githubRegistrationToken} --labels ${label} | su ${config.input.runnerUser} `,
+        `echo ./run.sh | su ${config.input.runnerUser} `,
     ];
 }
 
