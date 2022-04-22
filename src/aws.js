@@ -361,9 +361,10 @@ async function stopRunner() {
     else {
         
         for (let i = 0; i < result.Reservations.length; i++) {
-            core.info(`Instance ${result.Reservations[0].Instances[i].InstanceId} - Status ${result.Reservations[0].Instances[i].State.Name}`);
-            if (result.Reservations[0].Instances[i].State.Code == '0' || result.Reservations[0].Instances[i].State.Code == '16') {
-                instanceIds.push(result.Reservations[0].Instances[i].InstanceId);
+            const instance = result.Reservations[0].Instances[i];
+            core.info(`Instance ${instance.InstanceId} - Status ${instance.State.Name}`);
+            if (instance.State.Name == 'pending' || instance.State.Name == 'running') {
+                instanceIds.push(instance.InstanceId);
             }
         }
         core.info(`Found EC2 instaces with id ${JSON.stringify(instanceIds)}`);
