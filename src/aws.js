@@ -362,7 +362,7 @@ async function stopRunner() {
         
         for (let i = 0; i < result.Reservations.length; i++) {
             core.info(`Instance ${result.Reservations[0].Instances[i].InstanceId} - Status ${result.Reservations[0].Instances[i].State.Name}`);
-            if (result.Reservations[0].Instances[i].Monitoring.State.Code == '0' || result.Reservations[0].Instances[i].Monitoring.State.Code == '16') {
+            if (result.Reservations[0].Instances[i].State.Code == '0' || result.Reservations[0].Instances[i].State.Code == '16') {
                 instanceIds.push(result.Reservations[0].Instances[i].InstanceId);
             }
         }
