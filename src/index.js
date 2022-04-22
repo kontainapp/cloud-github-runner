@@ -13,22 +13,33 @@ function setOutput(run_labels) {
 
 const startEC2 = async () => {
 
-    const ec2_label = config.getEC2RunOnLabel();
-    const userData = await gh.buildUserDataScript(ec2_label);
-    await aws.startRunner(userData);
-    await gh.waitForRunnerRegistered(ec2_label);
+    try {
+        const ec2_label = config.getEC2RunOnLabel();
+        const userData = await gh.buildUserDataScript(ec2_label);
+        await aws.startRunner(userData);
+        await gh.waitForRunnerRegistered(ec2_label);
 
-    return ec2_label;
+        return ec2_label;
+    }
+    catch (error) {
+        stopEC2();
+        throw error;
+    }
 }
 
 const startAzure = async () => {
 
-    const azure_label = config.getAzureRunOnLabel();
-    const userData = await gh.buildUserDataScript(azure_label);
-    await azure.startRunner(userData);
-    await gh.waitForRunnerRegistered(azure_label);
-
-    return azure_label;
+    try {
+        const azure_label = config.getAzureRunOnLabel();
+        const userData = await gh.buildUserDataScript(azure_label);
+        await azure.startRunner(userData);
+        await gh.waitForRunnerRegistered(azure_label);
+        return azure_label;
+    }
+    catch (error) {
+        stopAzure();
+        throw error;
+    }
 }
 
 
