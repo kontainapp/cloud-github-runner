@@ -13,39 +13,27 @@ function setOutput(run_labels) {
 
 const startEC2 = async () => {
 
-    try {
-        const ec2_label = config.getEC2RunOnLabel();
-        const userData = await gh.buildUserDataScript(ec2_label);
-        await aws.startRunner(userData);
-        await gh.waitForRunnerRegistered(ec2_label);
+    const ec2_label = config.getEC2RunOnLabel();
+    const userData = await gh.buildUserDataScript(ec2_label);
+    await aws.startRunner(userData);
+    await gh.waitForRunnerRegistered(ec2_label);
 
-        return ec2_label;
-    }
-    catch (error) {
-        stopEC2();
-        throw error;
-    }
+    return ec2_label;
 }
 
 const startAzure = async () => {
 
-    try {
-        const azure_label = config.getAzureRunOnLabel();
-        const userData = await gh.buildUserDataScript(azure_label);
-        await azure.startRunner(userData);
-        await gh.waitForRunnerRegistered(azure_label);
-        return azure_label;
-    }
-    catch (error) {
-        stopAzure();
-        throw error;
-    }
+    const azure_label = config.getAzureRunOnLabel();
+    const userData = await gh.buildUserDataScript(azure_label);
+    await azure.startRunner(userData);
+    await gh.waitForRunnerRegistered(azure_label);
+    return azure_label;
 }
 
 
-const start = async() => {
+const start = async () => {
     // prepare to return run-ons (none if particular runner was not requested)
-    const run_labels = {ec2: "none", azure: "none"};
+    const run_labels = { ec2: "none", azure: "none" };
     // prepare variable array of promises. EC2 is always first , Azure second 
     // in order to get consistent returns from Promise.all()
     const promises = ["none", "none"];
@@ -68,7 +56,7 @@ const start = async() => {
 const stopEC2 = async () => {
 
     const ec2_gh_label = config.getEC2RunOnLabel();
-    
+
     core.info(`Removing runner ${ec2_gh_label}`);
     await gh.removeRunner(ec2_gh_label);
     await aws.stopRunner()

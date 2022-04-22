@@ -334,7 +334,7 @@ async function stopRunner() {
 
     const ec2_tag = config.getEC2RunOnLabel();
 
-    const instancesIds = [];
+    const instanceIds = [];
 
     // find instance by name 
     params = {
@@ -360,34 +360,34 @@ async function stopRunner() {
     }
     else {
         
-        for (i = 0; i < result.Reservations.length; i++) {
-            core.info(`Instance ${result.Reservations[0].Instances[i].InstanceId} - Status ${result.Reservations[0].Instances[i].State}`);
+        for (let i = 0; i < result.Reservations.length; i++) {
+            core.info(`Instance ${result.Reservations[0].Instances[i].InstanceId} - Status ${result.Reservations[0].Instances[i].State.Name}`);
             if (result.Reservations[0].Instances[i].Monitoring.State.Code == '0' || result.Reservations[0].Instances[i].Monitoring.State.Code == '16') {
-                instancesIds.push(result.Reservations[0].Instances[i].InstanceId);
+                instanceIds.push(result.Reservations[0].Instances[i].InstanceId);
             }
         }
-        core.info(`Found EC2 instaces with id ${JSON.stringify(instancesIds)}`);
+        core.info(`Found EC2 instaces with id ${JSON.stringify(instanceIds)}`);
     }
 
     // if there was no failure on previous related jobs. i.e isFailure is false
     // we terminate the VM; otherwise we just stop it so it is ready for future examination
     params = {
-        InstanceIds: instancesIds,
+        InstanceIds: instanceIds,
     };
 
     try {
         if (config.terminateInstance) {
-            core.info(`Terminating ec2 instance ${instanceId}`);
+            core.info(`Terminating ec2 instances ${JSON.stringify(instanceIds)}`);
             await ec2.terminateInstances(params).promise();
-            core.info(`AWS EC2 instance ${instanceId} is terminated`);
+            core.info(`AWS EC2 instances ${JSON.stringify(instanceIds)} is terminated`);
         } else {
-            core.info(`Stopping ec2 instance ${instanceId}`);
+            core.info(`Stopping ec2 instances ${JSON.stringify(instanceIds)}`);
             await ec2.stopInstances(params).promise();
-            core.info(`AWS EC2 instance ${instanceId} is stopped`);
+            core.info(`AWS EC2 instances ${JSON.stringify(instanceIds)} is stopped`);
         }
         return;
     } catch (error) {
-        core.error(`AWS EC2 instance ${instanceId} termination error`);
+        core.error(`AWS EC2 instances ${JSON.stringify(instanceIds)} termination error`);
         throw error;
     }
 }
