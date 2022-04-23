@@ -359,14 +359,21 @@ async function stopRunner() {
         return;
     }
     else {
-        
-        for (let i = 0; i < result.Reservations[0].Instances.length; i++) {
+        const instance_count = result.Reservations[0].Instances.length;
+        core.info(`Found ${instance_count} instances`)
+        for (let i = 0; i < instance_count; i++) {
             const instance = result.Reservations[0].Instances[i];
+            core.info(`Instanse ${i} - ${instance}`)
             core.info(`Instance ${instance.InstanceId} - Status ${instance.State.Name}`);
             if (instance.State.Name == 'pending' || instance.State.Name == 'running') {
+                core.info(`Adding instanceId ${instance.InstanceId} to teh array`);
                 instanceIds.push(instance.InstanceId);
             }
+            else {
+                core.info(`skipping non-running instance`);
+            }
         }
+        
         core.info(`Found EC2 instaces with id ${JSON.stringify(instanceIds)}`);
     }
 
