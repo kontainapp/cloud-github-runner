@@ -348,33 +348,34 @@ async function stopRunner() {
         ]
     };
 
-    core.info(`Looking for EC2 Instance ${ec2_tag}`);
+    core.info(`Looking for EC2 Instance(s) ${ec2_tag}`);
     result = await ec2.describeInstances(params).promise();
 
-    core.info(`Reservations: `);
-    core.info(`${JSON.stringify(result.Reservations)}`);
+    core.debug(`Reservations: `);
+    core.debug(`${JSON.stringify(result.Reservations)}`);
     if (result.Reservations.length == 0) {
         // no instance exists - nothing to do 
         core.info(`EC2 instance ${ec2_tag} has never started`);
         return;
     }
     else {
+        // Looking for ALL instances with given tag - case when workflow was run multiple times
+        // all ec2 instances will have  the same tag, we need to make sure we clear all of them out  
         const instance_count = result.Reservations.length;
-        core.info(`Found ${instance_count} instances`)
+        core.debug(`Found ${instance_count} instances`)
         for (let i = 0; i < instance_count; i++) {
             const instance = result.Reservations[i].Instances[0];
-            core.info(`Instanse ${i} - ${JSON.stringify(instance)}`)
-            core.info(`Instance ${instance.InstanceId} - Status ${instance.State.Name}`);
+            core.debug(`Instance ${instance.InstanceId} - Status ${instance.State.Name}`);
             if (instance.State.Name == 'pending' || instance.State.Name == 'running') {
-                core.info(`Adding instanceId ${instance.InstanceId} to teh array`);
+                core.debug(`Adding instanceId ${instance.InstanceId} to teh array`);
                 instanceIds.push(instance.InstanceId);
             }
             else {
-                core.info(`skipping non-running instance`);
+                core.debug(`skipping non-running instance`);
             }
         }
 
-        core.info(`Found EC2 instaces with id ${JSON.stringify(instanceIds)}`);
+        core.info(`Found EC2 instaces with ids ${JSON.stringify(instanceIds)}`);
     }
 
     // if there was no failure on previous related jobs. i.e isFailure is false
