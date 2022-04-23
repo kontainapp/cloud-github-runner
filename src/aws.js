@@ -359,11 +359,11 @@ async function stopRunner() {
         return;
     }
     else {
-        const instance_count = result.Reservations[0].Instances.length;
+        const instance_count = result.Reservations[0].length;
         core.info(`Found ${instance_count} instances`)
         for (let i = 0; i < instance_count; i++) {
-            const instance = result.Reservations[0].Instances[i];
-            core.info(`Instanse ${i} - ${instance}`)
+            const instance = result.Reservations[i].Instances[0];
+            core.info(`Instanse ${i} - ${JSON.stringify(instance)}`)
             core.info(`Instance ${instance.InstanceId} - Status ${instance.State.Name}`);
             if (instance.State.Name == 'pending' || instance.State.Name == 'running') {
                 core.info(`Adding instanceId ${instance.InstanceId} to teh array`);
@@ -373,7 +373,7 @@ async function stopRunner() {
                 core.info(`skipping non-running instance`);
             }
         }
-        
+
         core.info(`Found EC2 instaces with id ${JSON.stringify(instanceIds)}`);
     }
 
