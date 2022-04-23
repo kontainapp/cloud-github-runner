@@ -359,7 +359,7 @@ async function stopRunner() {
         return;
     }
     else {
-        const instance_count = result.Reservations[0].length;
+        const instance_count = result.Reservations.length;
         core.info(`Found ${instance_count} instances`)
         for (let i = 0; i < instance_count; i++) {
             const instance = result.Reservations[i].Instances[0];
