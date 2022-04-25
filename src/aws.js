@@ -367,7 +367,7 @@ async function stopRunner() {
             const instance = result.Reservations[i].Instances[0];
             core.debug(`Instance ${instance.InstanceId} - Status ${instance.State.Name}`);
             if (instance.State.Name == 'pending' || instance.State.Name == 'running') {
-                core.debug(`Adding instanceId ${instance.InstanceId} to teh array`);
+                core.debug(`Adding instanceId ${instance.InstanceId} to the array`);
                 instanceIds.push(instance.InstanceId);
             }
             else {
@@ -378,6 +378,10 @@ async function stopRunner() {
         core.info(`Found EC2 instaces with ids ${JSON.stringify(instanceIds)}`);
     }
 
+    if (instanceIds.length == 0) {
+        core.info(`No EC2 running instances for ${ec2_tag} have been found`);
+        return;
+    }
     // if there was no failure on previous related jobs. i.e isFailure is false
     // we terminate the VM; otherwise we just stop it so it is ready for future examination
     params = {

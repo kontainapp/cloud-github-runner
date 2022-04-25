@@ -27,6 +27,7 @@ const startAzure = async () => {
     const userData = await gh.buildUserDataScript(azure_label);
     await azure.startRunner(userData);
     await gh.waitForRunnerRegistered(azure_label);
+    
     return azure_label;
 }
 
