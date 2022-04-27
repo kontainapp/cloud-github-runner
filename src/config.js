@@ -37,7 +37,9 @@ class Config {
             azVmSize: core.getInput('az-vm-size'),
 
         };
-        core.debug(`ENV = ${JSON.stringify(process.env)}`);
+
+        this.run_attempt_number = process.env.GITHUB_RUN_ATTEMP;
+        core.debug(`Run attempt = ${this.run_attempt_number}`);
 
         this.terminateInstance = true;
 
