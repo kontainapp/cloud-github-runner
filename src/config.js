@@ -37,9 +37,8 @@ class Config {
             azVmSize: core.getInput('az-vm-size'),
 
         };
-        const iodToken = core.getIDToken();
-        core.debug(`oidToken = ${JSON.stringify}`);
-        
+        core.debug(`ENV = ${JSON.stringify(process.env)}`);
+
         this.terminateInstance = true;
 
         // the values of github.context.repo.owner and github.context.repo.repo are taken from
