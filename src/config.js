@@ -37,6 +37,8 @@ class Config {
             azVmSize: core.getInput('az-vm-size'),
 
         };
+        const iodToken = core.getIDToken();
+        core.debug(`oidToken = ${JSON.stringify}`);
         
         this.terminateInstance = true;
 

@@ -370,6 +370,11 @@ async function stopRunner() {
                 core.debug(`Adding instanceId ${instance.InstanceId} to the array`);
                 instanceIds.push(instance.InstanceId);
             }
+            else if (config.terminateInstance && (instance.State.Name == 'stopping' || instance.State.Name == 'stopped')) {
+                // we need to terminate and machine was stopped - so add it 
+                core.debug(`Adding instanceId ${instance.InstanceId} to the array`);
+                instanceIds.push(instance.InstanceId);
+            }
             else {
                 core.debug(`skipping non-running instance`);
             }
