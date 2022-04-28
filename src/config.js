@@ -38,9 +38,6 @@ class Config {
 
         };
 
-        // core.debug(`ENV = ${JSON.stringify(process.env)}`);
-        // core.debug(`Attempt = ${process.env.GITHUB_RUN_ATTEMPT}`);
-
         this.run_attempt_number = process.env.GITHUB_RUN_ATTEMPT;
         core.debug(`Run attempt = ${this.run_attempt_number}`);
 
