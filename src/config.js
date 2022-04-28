@@ -38,6 +38,9 @@ class Config {
 
         };
 
+        this.run_attempt_number = process.env.GITHUB_RUN_ATTEMPT;
+        core.debug(`Run attempt = ${this.run_attempt_number}`);
+
         this.terminateInstance = true;
 
         // the values of github.context.repo.owner and github.context.repo.repo are taken from
@@ -48,7 +51,10 @@ class Config {
             repo: github.context.repo.repo,
         };
 
-        this.label = 'runner-' + github.context.workflow.replace(/\s/g, '-') + '-' + github.context.runNumber;
+        this.label = `runner-${github.context.workflow.replace(/\s/g, '-')}-${github.context.runNumber}`;
+        if (this.run_attempt_number > 1) {
+            this.label = `${this.label}-${this.run_attempt_number}`;
+        }
 
         let tags = [{ "Key": "Name", "Value": this.getEC2RunOnLabel() }];
         if (this.input.ec2Tags) {

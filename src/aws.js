@@ -334,6 +334,8 @@ async function stopRunner() {
 
     const ec2_tag = config.getEC2RunOnLabel();
 
+    const instanceIds = [];
+
     // find instance by name 
     params = {
         Filters: [
@@ -345,41 +347,60 @@ async function stopRunner() {
             }
         ]
     };
-    let instanceId;
 
-    core.info(`Looking for EC2 Instance ${ec2_tag}`);
+    core.info(`Looking for EC2 Instance(s) ${ec2_tag}`);
     result = await ec2.describeInstances(params).promise();
+
+    core.debug(`Reservations: `);
+    core.debug(`${JSON.stringify(result.Reservations)}`);
     if (result.Reservations.length == 0) {
         // no instance exists - nothing to do 
         core.info(`EC2 instance ${ec2_tag} has never started`);
         return;
     }
     else {
-        const instance = result.Reservations[0].Instances[0];
+        // Looking for ALL instances with given tag - case when workflow was run multiple times
+        // all ec2 instances will have  the same tag, we need to make sure we clear all of them out  
+        const instance_count = result.Reservations.length;
+        core.debug(`Found ${instance_count} instances`)
+        for (let i = 0; i < instance_count; i++) {
+            const instance = result.Reservations[i].Instances[0];
+            core.debug(`Instance ${instance.InstanceId} - Status ${instance.State.Name}`);
+            if (instance.State.Name == 'pending' || instance.State.Name == 'running') {
+                core.debug(`Adding instanceId ${instance.InstanceId} to the array`);
+                instanceIds.push(instance.InstanceId);
+            }
+            else {
+                core.debug(`skipping non-running instance`);
+            }
+        }
 
-        instanceId = instance.InstanceId;
-        core.info(`Found EC2 instace with id ${instanceId}`);
+        core.info(`Found EC2 instaces with ids ${JSON.stringify(instanceIds)}`);
     }
 
+    if (instanceIds.length == 0) {
+        core.info(`No EC2 running instances for ${ec2_tag} have been found`);
+        return;
+    }
     // if there was no failure on previous related jobs. i.e isFailure is false
     // we terminate the VM; otherwise we just stop it so it is ready for future examination
     params = {
-        InstanceIds: [instanceId],
+        InstanceIds: instanceIds,
     };
 
     try {
         if (config.terminateInstance) {
-            core.info(`Terminating ec2 instance ${instanceId}`);
+            core.info(`Terminating ec2 instances ${JSON.stringify(instanceIds)}`);
             await ec2.terminateInstances(params).promise();
-            core.info(`AWS EC2 instance ${instanceId} is terminated`);
+            core.info(`AWS EC2 instances ${JSON.stringify(instanceIds)} is terminated`);
         } else {
-            core.info(`Stopping ec2 instance ${instanceId}`);
+            core.info(`Stopping ec2 instances ${JSON.stringify(instanceIds)}`);
             await ec2.stopInstances(params).promise();
-            core.info(`AWS EC2 instance ${instanceId} is stopped`);
+            core.info(`AWS EC2 instances ${JSON.stringify(instanceIds)} is stopped`);
         }
         return;
     } catch (error) {
-        core.error(`AWS EC2 instance ${instanceId} termination error`);
+        core.error(`AWS EC2 instances ${JSON.stringify(instanceIds)} termination error`);
         throw error;
     }
 }

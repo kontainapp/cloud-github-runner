@@ -193,7 +193,10 @@ const startRunner = async (userData) => {
         const vmImageInfo = await computeClient.images.get(image_data[0], image_data[1]);
 
         await createVM(computeClient, vmImageInfo, nicInfo, userData);
-        await getVM(computeClient);
+        const vmInfo = await getVM(computeClient);
+
+        core.debug(`AZURE VM INFO: ${JSON.stringify(vmInfo)}`);
+        
         core.info("Azure VM has started");
     } catch (error) {
         core.error('Azure VM starting error');
